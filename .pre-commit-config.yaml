@@ -1,0 +1,36 @@
+# To install the git pre-commit hook run:
+#   pre-commit install --hook-type pre-push --hook-type post-checkout --hook-type pre-commit
+# To run pre-commit hooks manually on all files run:
+#   pre-commit run --all-files
+
+default_install_hook_types: [pre-commit]
+
+repos:
+  - repo: https://gitlab.intra.infineon.com/public-mirror/github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: [--maxkb=10240]
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: trailing-whitespace
+        exclude: .pdf|.svg|.graphml
+      - id: pretty-format-json
+        exclude: .ipynb|.vscode/settings.json
+        args: [--autofix]
+      - id: mixed-line-ending
+        exclude: .pdf|.svg|.graphml
+      - id: check-merge-conflict
+  - repo: https://gitlab.intra.infineon.com/public-mirror/github.com/crate-ci/typos
+    rev: v1.38.1
+    hooks:
+      - id: typos
+        args: [--force-exclude]
+        exclude: .pdf|.svg|.graphml|.excalidraw
+        # TODO: add false positives to _typos.toml to ignore (see instructions on https://github.com/crate-ci/typos)

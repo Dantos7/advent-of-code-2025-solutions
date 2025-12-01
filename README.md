@@ -14,7 +14,7 @@ Advent of Code (https://adventofcode.com) is a yearly series of programming ques
 * With env variable `AOC_SESSION` set:
    * Auto-download part 2 of questions into `<year>/<day>/README.md`
    * Auto-download user input into `<year>/<day>/input-user.md`
-   * Only runs part 2 once part 1 is completed 
+   * Only runs part 2 once part 1 is completed
 * When you save `code.go`, it will execute your `run` function 4 times:
    * Input `input-example.txt` and `part2=false`
    * Input `input-example(2).txt` and `part2=true`
@@ -62,7 +62,7 @@ Advent of Code (https://adventofcode.com) is a yearly series of programming ques
 1. The question is downloaded to `./2023/01/README.md`
 1. Login to https://adventofcode.com
 1. Find your question (e.g. https://adventofcode.com/2023/day/1) and **[get your puzzle input](https://adventofcode.com/2023/day/1/input)** and save it to `./2023/01/input-user.txt`
-   * See **Session** below to automate this step 
+   * See **Session** below to automate this step
 1. Iterate on `code.go` until you get the answer
 1. Submit it to https://adventofcode.com/2023/day/1
 
@@ -77,6 +77,6 @@ Advent of Code (https://adventofcode.com) is a yearly series of programming ques
 * Retrieve the contents of `session`
 * Export it as `AOC_SESSION`
 
-With your session set, running `code.go` will download your user-specifc `input-user.txt` and also update `README.md` with part 2 of the question once you've completed part 1.
+With your session set, running `code.go` will download your user-specific `input-user.txt` and also update `README.md` with part 2 of the question once you've completed part 1.
 
 Currently, your session is NOT used to submit your answer. You still need to login to https://adventofcode.com to submit.

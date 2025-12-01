@@ -11,10 +11,21 @@ function template() {
 package main
 
 import (
+	"strconv"
+	"strings"
+
+	"log"
+
+	"github.com/joho/godotenv"
 	"github.com/jpillora/puzzler/harness/aoc"
 )
 
 func main() {
+	err := godotenv.Load("../../.env")
+	if err != nil {
+		log.Fatal("Error loading .env file: ", err)
+	}
+
 	aoc.Harness(run)
 }
 
@@ -27,10 +38,18 @@ func main() {
 func run(part2 bool, input string) any {
 	// when you're ready to do part 2, remove this "not implemented" block
 	if part2 {
-		return "not implemented"
+		return runPart2(input)
 	}
 	// solve part 1 here
+	return runPart1(input)
+}
+
+func runPart1(input string) any {
 	return 42
+}
+
+func runPart2(input string) any {
+	return "not implemented"
 }
 EOF
 }
