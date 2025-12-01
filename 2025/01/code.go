@@ -40,7 +40,7 @@ func runPart1(input string) any {
 	var direction rune = 'R'
 	var span uint64
 	var err error
-	log.Println("Start:", current)
+	// log.Println("Start:", current)
 	lines := strings.Split(input, "\n")
 
 	for _, line := range lines {
@@ -50,7 +50,7 @@ func runPart1(input string) any {
 			log.Fatal("Failed to parse span: ", err)
 		}
 		current = rotate(current, direction, span)
-		log.Println(string(direction), span, "=>", current)
+		// log.Println(string(direction), span, "=>", current)
 		if current == 0 {
 			counter++
 		}
@@ -67,5 +67,46 @@ func rotate(current uint64, direction rune, span uint64) uint64 {
 }
 
 func runPart2(input string) any {
-	return "not implemented"
+	counter := 0
+	var current int = 50
+	var direction rune = 'R'
+	var span int
+	var err error
+	var clicks int
+	// log.Println("Start:", current)
+	lines := strings.Split(input, "\n")
+
+	for _, line := range lines {
+		direction = rune(line[0])
+		span, err = strconv.Atoi(line[1:])
+		if err != nil {
+			log.Fatal("Failed to parse span: ", err)
+		}
+		current, clicks = rotateWithIntermediateClicks(current, direction, span)
+		// log.Println(string(direction), span, "=>", current, "clicks:", clicks)
+		counter += clicks
+	}
+	return counter
+}
+
+func rotateWithIntermediateClicks(current int, direction rune, span int) (int, int) {
+	// Use modulus 100 to wrap around the circle (use it also for the span to ignore multiple full rotations)
+	var clicks = 0
+	var new_current int
+	if direction == 'R' {
+		new_current = (current + span%100) % 100
+		// Check if we crossed the 0 point (includes landing exactly on 0) - don't count a crossing if we are starting at 0
+		if current != 0 && (current+span%100) >= 100 {
+			clicks++
+		}
+	} else {
+		new_current = (current - span%100 + 100) % 100
+		// Check if we crossed the 0 point (includes landing exactly on 0) - don't count a crossing if we are starting at 0
+		if current != 0 && (current-span%100) <= 0 {
+			clicks++
+		}
+	}
+	// Add full rotations clicks at the end
+	clicks += int(span / 100)
+	return new_current, clicks
 }
