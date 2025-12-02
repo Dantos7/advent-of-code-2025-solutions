@@ -36,12 +36,12 @@ func runPart1(input string) any {
 	sum := 0
 	intervals := strings.SplitSeq(input, ",")
 	for interval := range intervals {
-		sum += getRepeatedNumbersSumInIntervalNaive(interval)
+		sum += getRepeatedNumbersSumPart1(interval)
 	}
 	return sum
 }
 
-func getRepeatedNumbersSumInIntervalNaive(interval string) int {
+func getRepeatedNumbersSumPart1(interval string) int {
 	// Naive version - enumerate every number in interval and check if it is repeated
 	start_end := strings.Split(interval, "-")
 	start, err := strconv.Atoi(start_end[0])
@@ -54,14 +54,14 @@ func getRepeatedNumbersSumInIntervalNaive(interval string) int {
 	}
 	sum := 0
 	for i := start; i <= end; i++ {
-		if isRepeated(strconv.Itoa(i)) {
+		if isRepeatedPart1(strconv.Itoa(i)) {
 			sum += i
 		}
 	}
 	return sum
 }
 
-func isRepeated(input string) bool {
+func isRepeatedPart1(input string) bool {
 	// Check is done by splitting the string in half and checking if the 2 pieces are equal
 	if len(input)%2 == 0 {
 		return input[:len(input)/2] == input[len(input)/2:]
@@ -70,5 +70,48 @@ func isRepeated(input string) bool {
 }
 
 func runPart2(input string) any {
-	return "not implemented"
+	sum := 0
+	intervals := strings.SplitSeq(input, ",")
+	for interval := range intervals {
+		sum_interval := getRepeatedNumbersSumPart2(interval)
+		sum += sum_interval
+	}
+	return sum
+}
+
+func getRepeatedNumbersSumPart2(interval string) int {
+	// Naive version - enumerate every number in interval and check if it is repeated
+	start_end := strings.Split(interval, "-")
+	start, err := strconv.Atoi(start_end[0])
+	if err != nil {
+		log.Fatal(err)
+	}
+	end, err := strconv.Atoi(start_end[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+	sum := 0
+	for i := start; i <= end; i++ {
+		if isRepeatedPart2(strconv.Itoa(i)) {
+			sum += i
+		}
+	}
+	return sum
+}
+
+func isRepeatedPart2(input string) bool {
+	// Check is done by increasing progressively the span size. Then for each span length,
+	// - check if the input is a multiple in length of the span
+	// - construct a string repeating the first n characters, m times to obtain a string of the same length of the input
+	// - check if the 2 strings match
+	for span_size := 1; span_size <= len(input)/2; span_size++ {
+		if len(input)%span_size == 0 {
+			repeat_count := len(input) / span_size
+			repeated := strings.Repeat(input[:span_size], repeat_count)
+			if repeated == input {
+				return true
+			}
+		}
+	}
+	return false
 }
