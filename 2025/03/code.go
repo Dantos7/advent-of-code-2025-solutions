@@ -62,8 +62,10 @@ func getBankOutputJoltage(bank string) int {
 		positions[char] = append(positions[char], i)
 	}
 
-	for _, char0 := range "987654321" {
-		for _, char1 := range "987654321" {
+	charset := "987654321"
+
+	for _, char0 := range charset {
+		for _, char1 := range charset {
 			if char0 == char1 && counter[char0] >= 2 {
 				// If the 2 digits are equal, there is no need to check for positions (order is not relevant)
 				// Hence, we can return
@@ -98,5 +100,52 @@ func getBankOutputJoltage(bank string) int {
 }
 
 func runPart2(input string) any {
-	return "not implemented"
+	banks := strings.Split(input, "\n")
+	spanLength := 12
+	sumJoltage := 0
+
+	for _, bank := range banks {
+		// usedPositions := make([]bool, len(banks[0])) // For visualization purposes only
+		startPosition := 0
+		outputJoltageStr := ""
+		for i := 0; i < spanLength; i++ {
+			digit, pos := getMaxInInterval(bank, startPosition, spanLength-i-1)
+			startPosition = pos + 1
+			outputJoltageStr += string(digit)
+			// usedPositions[pos] = true // For visualization purposes only
+
+			// For visualization purposes only
+			// for i, char := range bank {
+			// 	if usedPositions[i] {
+			// 		fmt.Print(string(char))
+			// 	} else {
+			// 		fmt.Print("_")
+			// 	}
+			// }
+			// fmt.Println()
+		}
+
+		outputJoltage, err := strconv.Atoi(outputJoltageStr)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// fmt.Println(bank, outputJoltage) // For visualization purposes only
+
+		sumJoltage += outputJoltage
+	}
+	return sumJoltage
+}
+
+func getMaxInInterval(bank string, startPosition int, remainingDigits int) (rune, int) {
+	// Get the highest digit possible that leaves enough digits on the right
+	// In case of duplicated digits, take the left-most
+	maxDigit := '0'
+	maxDigitPosition := -1
+	for i := startPosition; i < len(bank)-remainingDigits; i++ {
+		if rune(bank[i]) > maxDigit {
+			maxDigit = rune(bank[i])
+			maxDigitPosition = i
+		}
+	}
+	return maxDigit, maxDigitPosition
 }
