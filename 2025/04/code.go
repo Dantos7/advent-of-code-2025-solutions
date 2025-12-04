@@ -103,7 +103,34 @@ func visualizeMatrix(matrix [][]rune) {
 }
 
 func runPart2(input string) any {
-	return "not implemented"
+	matrix := buildMatrix(input)
+	counterTotal := 0
+	counter := 0
+	for counter > 0 || counterTotal == 0 {
+		counter = findAndRemoveAccessible(matrix)
+		counterTotal += counter
+	}
+	return counterTotal
+}
+
+func findAndRemoveAccessible(matrix [][]rune) int {
+	// Same as part 1 but edit directly the matrix when an accessible roll is found
+	// Matrices are passed by reference, hence changes are passed by to the caller function
+	counter := 0
+
+	for i, row := range matrix {
+		for j, c := range row {
+			if c == '@' && isAccessible(matrix, i, j) {
+				counter++
+				// Remove accessible roll
+				matrix[i][j] = 'x'
+			}
+		}
+	}
+
+	// For visualization purposes only
+	// visualizeMatrix(matrix)
+	return counter
 }
 
 func buildMatrix(input string) [][]rune {
