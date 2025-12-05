@@ -33,7 +33,7 @@ func run(part2 bool, input string) any {
 	return runPart1(input)
 }
 
-func runPart1(input string) any {
+func runPart1Slow(input string) any {
 	banks := strings.SplitSeq(input, "\n")
 	sumJoltage := 0
 	for bank := range banks {
@@ -97,6 +97,44 @@ func getBankOutputJoltage(bank string) int {
 	}
 	// Return dummy value if no number found (should not happen with valid input)
 	return 11
+}
+
+func runPart1(input string) any {
+	// Optimized version - same approach as part 2 but with spanLength = 2
+	banks := strings.Split(input, "\n")
+	spanLength := 2
+	sumJoltage := 0
+
+	for _, bank := range banks {
+		// usedPositions := make([]bool, len(banks[0])) // For visualization purposes only
+		startPosition := 0
+		outputJoltageStr := ""
+		for i := 0; i < spanLength; i++ {
+			digit, pos := getMaxInInterval(bank, startPosition, spanLength-i-1)
+			startPosition = pos + 1
+			outputJoltageStr += string(digit)
+			// usedPositions[pos] = true // For visualization purposes only
+
+			// For visualization purposes only
+			// for i, char := range bank {
+			// 	if usedPositions[i] {
+			// 		fmt.Print(string(char))
+			// 	} else {
+			// 		fmt.Print("_")
+			// 	}
+			// }
+			// fmt.Println()
+		}
+
+		outputJoltage, err := strconv.Atoi(outputJoltageStr)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// fmt.Println(bank, outputJoltage) // For visualization purposes only
+
+		sumJoltage += outputJoltage
+	}
+	return sumJoltage
 }
 
 func runPart2(input string) any {
