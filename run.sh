@@ -11,9 +11,6 @@ function template() {
 package main
 
 import (
-	// "strconv"
-	// "strings"
-
 	"log"
 
 	"github.com/joho/godotenv"
