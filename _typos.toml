@@ -1,0 +1,7 @@
+[default]
+extend-ignore-re = [
+    "(?Rm)^.*(#|//|(<!--))\\s*noqa: ?typos\\s*.*\\s*(-->)?$",  # Append "noqa: typos" to a line to not apply spellchecking
+]
+
+[default.extend-words]
+# Do not correct these words (case-insensitive)
