@@ -150,5 +150,54 @@ func mergeBoxes(boxesToMerge [2][3]int, boxToCircuit map[[3]int]int, circuitToBo
 }
 
 func runPart2(input string) any {
-	return "not implemented"
+	// Same approach as part1 but rather than performing m merges, we merge until there is one circuit
+	// At the end, we don't return the size but the product of the x coordinates of the last 2 merges
+
+	boxes := parseInput(input)
+	boxesToEuclidianDistances := make(map[[2][3]int]float64, 0)
+	euclidianDistancesToBoxes := make(map[float64][2][3]int, 0)
+	boxToCircuit := make(map[[3]int]int)
+	circuitToBoxes := make(map[int][][3]int)
+	// Assign a circuit to each box
+	for i, b := range boxes {
+		boxToCircuit[b] = i
+		circuitToBoxes[i] = [][3]int{b}
+	}
+
+	// First pass compute all euclidian distances
+	for i, b1 := range boxes {
+		for j, b2 := range boxes {
+			if j <= i {
+				continue
+			}
+			distance := euclidianDistance(b1, b2)
+			boxesToEuclidianDistances[[2][3]int{b1, b2}] = distance
+			// Assert that there are not 2 couple of boxes with the same euclidian distance
+			if otherBoxes, ok := euclidianDistancesToBoxes[distance]; ok {
+				log.Fatal("Shared euclidian distance for ", b1, ", ", b2, " and ", otherBoxes)
+			}
+			euclidianDistancesToBoxes[distance] = [2][3]int{b1, b2}
+			boxesToEuclidianDistances[[2][3]int{b2, b1}] = distance
+		}
+	}
+
+	// Extract euclidian distances keys
+	euclidianDistances := make([]float64, 0, len(euclidianDistancesToBoxes))
+	for d := range euclidianDistancesToBoxes {
+		euclidianDistances = append(euclidianDistances, d)
+	}
+	// Sort euclidian distances
+	slices.Sort(euclidianDistances)
+
+	// Merge the boxes in circuits for `merges` iterations by taking the smallest euclidian distance at each iteration
+	for {
+		smallestEuclidianDistance := euclidianDistances[0]
+		euclidianDistances = euclidianDistances[1:]
+		boxesToMerge := euclidianDistancesToBoxes[smallestEuclidianDistance]
+		mergeBoxes(boxesToMerge, boxToCircuit, circuitToBoxes)
+		// fmt.Println(boxesToMerge, boxToCircuit[boxesToMerge[0]], boxToCircuit[boxesToMerge[1]])
+		if len(circuitToBoxes) == 1 {
+			return boxesToMerge[0][0] * boxesToMerge[1][0]
+		}
+	}
 }
