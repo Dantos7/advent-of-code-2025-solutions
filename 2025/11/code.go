@@ -35,8 +35,10 @@ func run(part2 bool, input string) any {
 func runPart1(input string) any {
 	vertices := parseInput(input)
 	start := "you"
+	end := "out"
 
-	count := countPathsToOut(start, vertices)
+	cache := make(map[string]int)
+	count := countPathsToEnd(start, end, vertices, cache)
 	return count
 }
 
@@ -62,9 +64,13 @@ func parseInput(input string) map[string][]Edge {
 	return vertices
 }
 
-func countPathsToOut(start string, vertices map[string][]Edge) int {
+func countPathsToEnd(start string, end string, vertices map[string][]Edge, cache map[string]int) int {
 	count := 0
-	if start == "out" {
+	if val, ok := cache[start]; ok {
+		return val
+	}
+	if start == end {
+		cache[start] = 1
 		return 1
 	}
 	edges, ok := vertices[start]
@@ -73,12 +79,45 @@ func countPathsToOut(start string, vertices map[string][]Edge) int {
 		return 0
 	} else {
 		for _, e := range edges {
-			count += countPathsToOut(e.To, vertices)
+			count += countPathsToEnd(e.To, end, vertices, cache)
 		}
 	}
+	cache[start] = count
 	return count
 }
 
 func runPart2(input string) any {
-	return "not implemented"
+	vertices := parseInput(input)
+
+	cache := make(map[string]int)
+	count_svr_fft := countPathsToEnd("svr", "fft", vertices, cache)
+	// fmt.Println(count_svr_fft)
+
+	cache = make(map[string]int)
+	count_fft_dac := countPathsToEnd("fft", "dac", vertices, cache)
+	// fmt.Println(count_fft_dac)
+
+	cache = make(map[string]int)
+	count_dac_out := countPathsToEnd("dac", "out", vertices, cache)
+	// fmt.Println(count_dac_out)
+
+	count_svr_fft_dac_out := count_svr_fft * count_fft_dac * count_dac_out
+	// fmt.Println(count_svr_fft_dac_out)
+
+	cache = make(map[string]int)
+	count_svr_dac := countPathsToEnd("svr", "dac", vertices, cache)
+	// fmt.Println(count_svr_dac)
+
+	cache = make(map[string]int)
+	count_dac_fft := countPathsToEnd("dac", "fft", vertices, cache)
+	// fmt.Println(count_dac_fft)
+
+	cache = make(map[string]int)
+	count_fft_out := countPathsToEnd("fft", "out", vertices, cache)
+	// fmt.Println(count_fft_out)
+
+	count_svr_dac_fft_out := count_svr_dac * count_dac_fft * count_fft_out
+	// fmt.Println(count_svr_fft_dac_out)
+
+	return count_svr_fft_dac_out + count_svr_dac_fft_out
 }

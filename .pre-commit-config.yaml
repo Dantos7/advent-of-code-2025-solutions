@@ -18,10 +18,10 @@ repos:
       - id: check-yaml
       - id: debug-statements
       - id: end-of-file-fixer
-        exclude: input-example.txt|input-user.txt
+        exclude: input-example.txt|input-user.txt|input-example2.txt
       - id: fix-byte-order-marker
       - id: trailing-whitespace
-        exclude: .pdf|.svg|.graphml|input-example.txt|input-user.txt
+        exclude: .pdf|.svg|.graphml|input-example.txt|input-example2.txt|input-user.txt
       - id: pretty-format-json
         exclude: .ipynb|.vscode/settings.json
         args: [--autofix]
