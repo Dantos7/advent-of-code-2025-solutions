@@ -33,5 +33,5 @@ repos:
     hooks:
       - id: typos
         args: [--force-exclude]
-        exclude: .pdf|.svg|.graphml|.excalidraw
+        exclude: .pdf|.svg|.graphml|.excalidraw|input-user.txt|input-example.txt
         # TODO: add false positives to _typos.toml to ignore (see instructions on https://github.com/crate-ci/typos)
