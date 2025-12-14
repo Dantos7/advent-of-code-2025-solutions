@@ -53,7 +53,7 @@ func runPart1(input string) any {
 }
 
 func computeArea(c1 [2]int, c2 [2]int) int {
-	return absInt((c1[0] - c2[0] + 1) * (c1[1] - c2[1] + 1))
+	return (absInt(c1[0]-c2[0]) + 1) * (absInt(c1[1]-c2[1]) + 1)
 }
 
 func parseInput(input string) [][2]int {
@@ -76,16 +76,6 @@ func parseInput(input string) [][2]int {
 
 func runPart2(input string) any {
 	coords := parseInput(input)
-	// var rows, cols int
-	// if len(coords) < 10 {
-	// 	// Example
-	// 	rows = 9
-	// 	cols = 15
-	// } else {
-	// 	rows = 100000
-	// 	cols = 100000
-	// }
-	var maxCoords [2][2]int
 
 	horizontalEdges := getHorizontalEdges(coords)
 	verticalEdges := getVerticalEdges(coords)
@@ -96,16 +86,16 @@ func runPart2(input string) any {
 		for _, c2 := range coords[i+1:] {
 			area := computeArea(c1, c2)
 			if area > max_area {
-				c3 := [2]int{c1[0], c2[1]}
-				c4 := [2]int{c2[0], c1[1]}
-				if isInside(c3, horizontalEdges, verticalEdges) && isInside(c4, horizontalEdges, verticalEdges) {
+				if isRectangleValid(c1, c2, horizontalEdges, verticalEdges, coords) {
 					max_area = area
-					maxCoords = [2][2]int{c1, c2}
+					// maxCoords = [2][2]int{c1, c2}
+					// fmt.Println("NEW MAX AREA", max_area, c1, c2)
 				}
 			}
 		}
 	}
-	fmt.Println(maxCoords)
+	// fmt.Println(maxCoords)
+
 	return max_area
 }
 
@@ -138,6 +128,20 @@ func getHorizontalEdges(coords [][2]int) []HorizontalEdge {
 			}
 		}
 	}
+
+	// Add the last edge
+	c1 := coords[0]
+	c2 := coords[len(coords)-1]
+	if c1[1] == c2[1] {
+		var segment [2]int
+		if c1[0] < c2[0] {
+			segment = [2]int{c1[0], c2[0]}
+		} else {
+			segment = [2]int{c2[0], c1[0]}
+		}
+		horizontalEdges = append(horizontalEdges, HorizontalEdge{segment, c1[1]})
+	}
+
 	slices.SortFunc(horizontalEdges, func(a, b HorizontalEdge) int {
 		if a.y < b.y {
 			return -1
@@ -171,6 +175,19 @@ func getVerticalEdges(coords [][2]int) []VerticalEdge {
 		}
 	}
 
+	// Add the last edge
+	c1 := coords[0]
+	c2 := coords[len(coords)-1]
+	if c1[0] == c2[0] {
+		var segment [2]int
+		if c1[1] < c2[1] {
+			segment = [2]int{c1[1], c2[1]}
+		} else {
+			segment = [2]int{c2[1], c1[1]}
+		}
+		verticalEdges = append(verticalEdges, VerticalEdge{c1[0], segment})
+	}
+
 	slices.SortFunc(verticalEdges, func(a, b VerticalEdge) int {
 		if a.x < b.x {
 			return -1
@@ -184,147 +201,86 @@ func getVerticalEdges(coords [][2]int) []VerticalEdge {
 	return verticalEdges
 }
 
-// TODO: !BUGGED -> always false
 func isInside(coord [2]int, horizontalEdges []HorizontalEdge, verticalEdges []VerticalEdge) bool {
-	// A coord is inside if an edge can be reached from each direction (up,down,right,left)
+	// Odd-even method: A coord is inside if
+	// - it belongs to an edge
+	// - from left to it, an odd number of edges is crossed
+	// 		Horizontal edges can be ignored (as the vertices belongs to 2 vertical edges anyway)
 
-	// Up
-	up := hasEdgeUp(coord, horizontalEdges, verticalEdges)
-	// fmt.Println("UP", coord, up)
-	if !up {
-		return false
+	// Check belonging
+	for _, e := range horizontalEdges {
+		if e.y == coord[1] && e.segment[0] <= coord[0] && coord[0] <= e.segment[1] {
+			return true
+		} else if e.y > coord[1] {
+			// Early exit since edges are ordered
+			break
+		}
 	}
-
-	down := hasEdgeDown(coord, horizontalEdges, verticalEdges)
-	// fmt.Println("DOWN", coord, down)
-	if !down {
-		return false
-	}
-
-	left := hasEdgeLeft(coord, horizontalEdges, verticalEdges)
-	// fmt.Println("LEFT", coord, left)
-	if !left {
-		return false
-	}
-
-	right := hasEdgeRight(coord, horizontalEdges, verticalEdges)
-	// fmt.Println("RIGHT", coord, right)
-
-	return right
-}
-
-func hasEdgeUp(coord [2]int, horizontalEdges []HorizontalEdge, verticalEdges []VerticalEdge) bool {
-	// Checks if the coordinate has an edge above
-	verticalUpFound := false
-	horizontalUpFound := false
 	for _, e := range verticalEdges {
-		if coord[0] == e.x && coord[1] >= e.segment[0] {
-			verticalUpFound = true
-			break
-		} else if coord[0] < e.x {
-			// Since the array is sorted, we can exit here
+		if e.x == coord[0] && e.segment[0] <= coord[1] && coord[1] <= e.segment[1] {
+			// It belongs to this vertical edge
+			return true
+		} else if e.x > coord[0] {
+			// Early exit since edges are ordered
 			break
 		}
 	}
-	if !verticalUpFound {
-		for _, e := range horizontalEdges {
-			// fmt.Println("HORIZONTAL", e, e.y)
-			if coord[1] >= e.y && e.segment[0] <= coord[0] && coord[0] <= e.segment[1] {
-				horizontalUpFound = true
-				break
-			} else if coord[1] < e.y {
-				// Since the array is sorted, we can exit here
-				break
-			}
-		}
-	}
-	return verticalUpFound || horizontalUpFound
-}
 
-func hasEdgeDown(coord [2]int, horizontalEdges []HorizontalEdge, verticalEdges []VerticalEdge) bool {
-	// Checks if the coordinate has an edge below
-	verticalDownFound := false
-	horizontalDownFound := false
-	for _, e := range verticalEdges {
-		if coord[0] == e.x && coord[1] <= e.segment[1] {
-			verticalDownFound = true
-			break
-		} else if coord[0] < e.x {
-			// Since the array is sorted, we can exit here
-			break
-		}
-	}
-	if !verticalDownFound {
-		for i := len(horizontalEdges) - 1; i >= 0; i-- {
-			e := horizontalEdges[i]
-			// fmt.Println("Horizontal", e, coord[1] <= e.y, e.segment[0] <= coord[0], coord[0] <= e.segment[1])
-			if coord[1] <= e.y && e.segment[0] <= coord[0] && coord[0] <= e.segment[1] {
-				horizontalDownFound = true
-				break
-			} else if coord[1] > e.y {
-				// Since the array is sorted, we can exit here
-				break
-			}
-		}
-	}
-	return verticalDownFound || horizontalDownFound
-}
-
-func hasEdgeLeft(coord [2]int, horizontalEdges []HorizontalEdge, verticalEdges []VerticalEdge) bool {
-	// Checks if the coordinate has an edge left
-	verticalLeftFound := false
-	horizontalLeftFound := false
-	for _, e := range verticalEdges {
-		if coord[0] >= e.x && e.segment[0] <= coord[1] && coord[1] <= e.segment[1] {
-			verticalLeftFound = true
-			break
-		} else if coord[0] < e.x {
-			// Since the array is sorted, we can exit here
-			break
-		}
-	}
-	if !verticalLeftFound {
-		for _, e := range horizontalEdges {
-			// fmt.Println("HORIZONTAL", e, coord[1] == e.y, coord[0] >= e.segment[0])
-			if coord[1] == e.y && coord[0] >= e.segment[0] {
-				horizontalLeftFound = true
-				break
-			} else if coord[1] < e.y {
-				// Since the array is sorted, we can exit here
-				break
-			}
-		}
-	}
-	return verticalLeftFound || horizontalLeftFound
-}
-
-func hasEdgeRight(coord [2]int, horizontalEdges []HorizontalEdge, verticalEdges []VerticalEdge) bool {
-	// Checks if the coordinate has an edge right
-	verticalRightFound := false
-	horizontalRightFound := false
-	for i := len(verticalEdges) - 1; i > 0; i-- {
+	// Count intersections
+	count := 0
+	ignoredEdges := make(map[int]struct{})
+	for i := 0; i < len(verticalEdges); i++ {
 		e := verticalEdges[i]
-		// fmt.Println("Vertical", e, coord[0] <= e.x, e.segment[0] <= coord[0], coord[0] <= e.segment[1])
-		if coord[0] <= e.x && e.segment[0] <= coord[1] && coord[1] <= e.segment[1] {
-			verticalRightFound = true
-			break
-		} else if coord[0] > e.x {
-			// Since the array is sorted, we can exit here
-			break
+		if _, ok := ignoredEdges[i]; ok {
+			continue
 		}
-	}
-	if !verticalRightFound {
-		for _, e := range horizontalEdges {
-			if coord[1] == e.y && coord[1] <= e.segment[1] {
-				horizontalRightFound = true
-				break
-			} else if coord[1] < e.y {
-				// Since the array is sorted, we can exit here
-				break
+		if e.x < coord[0] && e.segment[0] < coord[1] && coord[1] < e.segment[1] {
+			// It belongs to this vertical edge
+			count += 1
+		} else if e.x < coord[0] && e.segment[0] == coord[1] {
+			// Find the next vertical edge. If they go in the same direction count 2 and skip both, otherwise count 1 and skip both
+			for j := 0; j < len(verticalEdges); j++ {
+				if _, ok := ignoredEdges[j]; ok {
+					continue
+				}
+				if j != i && verticalEdges[j].segment[0] == coord[1] {
+					// Found, don't count edge, because same direction
+					// Remove the edge to not count it again
+					ignoredEdges[j] = struct{}{}
+					break
+				} else if j != i && verticalEdges[j].segment[1] == coord[1] {
+					// Found, count edge because different direction
+					// Remove the edge to not count it again
+					ignoredEdges[j] = struct{}{}
+					count += 1
+					break
+				}
 			}
+		} else if e.x < coord[0] && e.segment[1] == coord[1] {
+			// Find the next vertical edge. If they go in the same direction count 2 and skip both, otherwise count 1 and skip both
+			for j := 0; j < len(verticalEdges); j++ {
+				if _, ok := ignoredEdges[j]; ok {
+					continue
+				}
+				if j != i && verticalEdges[j].segment[1] == coord[1] {
+					// Found, don't count edge, because same direction
+					// Remove the edge to not count it again
+					ignoredEdges[j] = struct{}{}
+					break
+				} else if j != i && verticalEdges[j].segment[0] == coord[1] {
+					// Found, count edge because different direction
+					// Remove the edge to not count it again
+					ignoredEdges[j] = struct{}{}
+					count += 1
+					break
+				}
+			}
+		} else if e.x > coord[0] {
+			// Early exit since edges are ordered
+			break
 		}
 	}
-	return verticalRightFound || horizontalRightFound
+	return count%2 == 1
 }
 
 func visualizeMatrix(redCoordsSet map[[2]int]bool, greenCoordsSet map[[2]int]bool, rows int, cols int) {
@@ -353,4 +309,49 @@ func absInt(x int) int {
 	} else {
 		return 0 - x
 	}
+}
+
+func isRectangleValid(c1, c2 [2]int, horizontalEdges []HorizontalEdge, verticalEdges []VerticalEdge, coords [][2]int) bool {
+	// Rectangle is valid if
+	//    - All vertices are inside
+	//    - No red edge crosses any edge (in opposite directions - horizontal/vertical and vertical/horizontal)
+
+	c3 := [2]int{c1[0], c2[1]}
+	c4 := [2]int{c2[0], c1[1]}
+
+	if !isInside(c3, horizontalEdges, verticalEdges) || !isInside(c4, horizontalEdges, verticalEdges) {
+		return false
+	}
+
+	min_y := min(c1[1], c2[1])
+	max_y := max(c1[1], c2[1])
+	min_x := min(c1[0], c2[0])
+	max_x := max(c1[0], c2[0])
+
+	// Check that no point is inside the rectangle (if it is inside, then an edge has crossed)
+	for _, c := range coords {
+		if min_x < c[0] && c[0] < max_x && min_y < c[1] && c[1] < max_y {
+			return false
+		}
+	}
+
+	// Check for full crossing of horizontal edges (no edge vertex inside)
+	for _, e := range horizontalEdges {
+		if min_y < e.y && e.y < max_y {
+			if e.segment[0] <= min_x && max_x <= e.segment[1] {
+				return false
+			}
+		}
+	}
+
+	// Check for full crossing of vertical edges (no edge vertex inside)
+	for _, e := range verticalEdges {
+		if min_x < e.x && e.x < max_x {
+			if e.segment[0] <= min_y && max_y <= e.segment[1] {
+				return false
+			}
+		}
+	}
+
+	return true
 }
